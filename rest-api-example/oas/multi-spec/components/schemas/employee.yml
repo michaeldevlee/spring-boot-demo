@@ -1,0 +1,18 @@
+employee:
+  type: object
+  description: Employee request body
+  properties:
+    employeeId:
+      type: integer
+    employeeName:
+      type: string
+    position:
+      type: string
+    dateHired:
+      type: string
+      format: date
+  example:
+    employeeId: 1
+    employeeName: "John Doe"
+    position: "Manager"
+    dateHired: "2000-01-01"

@@ -1,0 +1,356 @@
+openapi: '3.0.2'
+info:
+  title: Employee System API
+  description: This is a sample API for demonstration purposes.
+  version: '1.0.0'
+  license:
+    name: Apache License 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.txt
+  contact:
+    name: Andie Azucena
+    email: aazucena@ms3-inc.com
+
+servers:
+  - url: https://virtserver.swaggerhub.com/coolice07/employee-sys-api/1.0.0  
+    description: SwaggerHub API Auto Mocking
+  - url: http://localhost:8090/v1/api/employee-sys
+    description: Local server
+  - url: http://my-dev-server.com/v1/api/employee-sys
+    description: Development
+  - url: '{protocol}://{serverUrl}/{version}/api/employee-sys'
+    variables:
+      protocol:
+        default: http
+        description: This is the protocol
+        enum:
+          - http
+          - https
+      serverUrl:
+        default: localhost:8090
+        description: This is the Server URL
+        enum:
+          - localhost:8090
+          - my-dev-server.com
+          - my-prod-server.com
+      version:
+        default: v1
+        description: This is the API version
+
+tags:
+  - name: employee
+    description: tag for employee resource
+
+paths: 
+  /employees:
+    get:
+      tags:
+        - employee
+      summary: Gets all employees
+      description: 
+        This operation gets all employee records from the `employee` database.
+      parameters:
+        - name: page
+          in: query
+          description: page number
+          schema:
+            type: integer
+            example: 1
+        - name: limit
+          in: query
+          description: maximum number of employees to return
+          schema:
+            type: integer
+            example: 10  
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                description: Employee List schema
+                items:
+                  type: object
+                  description: Employee request body
+                  properties:
+                    employeeId:
+                      type: integer
+                      example: 1
+                    employeeName:
+                      type: string
+                      example: "John Doe"
+                    position:
+                      type: string
+                      example: "Manager"
+                    dateHired:
+                      type: string
+                      format: date
+                      example: "2000-01-01"
+                example: 
+                  - employeeId: 1
+                    employeeName: "John Doe"
+                    position: "Manager"
+                    dateHired: "2000-01-01"
+                  - employeeId: 2
+                    employeeName: "Jane Doe"
+                    position: "Supervisor"
+                    dateHired: "2010-01-01"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                description: error object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2021-08-30T19:38:26.885"
+                  type:
+                    type: string
+                    example: "Type of exception"
+                  message:
+                    type: string
+                    example: "Details the error message"
+    post:
+      tags:
+        - employee
+      summary: Creates a new employee
+      description: This operation inserts a new employee record to the `employee` database.
+      requestBody:
+        description: Request body for POST and PATCH
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employeeName:
+                  type: string
+                  example: "John Doe"
+                position:
+                  type: string
+                  example: "Manager"
+                dateHired:
+                  type: string
+                  format: date
+                  example: "2000-01-01"
+      responses:
+        '201':
+          description: Created
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                description: error object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2021-08-30T19:38:26.885"
+                  type:
+                    type: string
+                    example: "Type of exception"
+                  message:
+                    type: string
+                    example: "Details the error message"
+  /employees/{employeeId}:
+    get:
+      tags:
+        - employee
+      summary: Gets a specific employee
+      description: 
+        This operation gets a specific employee record given `employeeId`.
+      parameters:
+      - name: employeeId
+        description: employee ID path parameter
+        required: true
+        in: path
+        schema:
+          type: integer
+          example: 1
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                description: Employee request body
+                properties:
+                  employeeId:
+                    type: integer
+                    example: 1
+                  employeeName:
+                    type: string
+                    example: "John Doe"
+                  position:
+                    type: string
+                    example: "Manager"
+                  dateHired:
+                    type: string
+                    format: date
+                    example: "2000-01-01"
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                description: error object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2021-08-30T19:38:26.885"
+                  type:
+                    type: string
+                    example: "Type of exception"
+                  message:
+                    type: string
+                    example: "Details the error message"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                description: error object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2021-08-30T19:38:26.885"
+                  type:
+                    type: string
+                    example: "Type of exception"
+                  message:
+                    type: string
+                    example: "Details the error message"
+    patch:
+      tags:
+        - employee
+      summary: Updates a specific employee
+      description: 
+        This operation updates a specific employee record given `employeeId`.
+      parameters:
+      - name: employeeId
+        description: employee ID path parameter
+        required: true
+        in: path
+        schema:
+          type: integer
+          example: 1
+      requestBody:
+        description: Request body for POST and PATCH
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                employeeName:
+                  type: string
+                  example: "John Doe"
+                position:
+                  type: string
+                  example: "Manager"
+                dateHired:
+                  type: string
+                  format: date
+                  example: "2000-01-01"       
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                description: error object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2021-08-30T19:38:26.885"
+                  type:
+                    type: string
+                    example: "Type of exception"
+                  message:
+                    type: string
+                    example: "Details the error message"         
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                description: error object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2021-08-30T19:38:26.885"
+                  type:
+                    type: string
+                    example: "Type of exception"
+                  message:
+                    type: string
+                    example: "Details the error message"
+    delete:
+      tags:
+        - employee
+      summary: Deletes a specific employee
+      description: 
+        This operation deletes a specific employee record given an `employeeId`.
+      parameters:
+      - name: employeeId
+        description: employee ID path parameter
+        required: true
+        in: path
+        schema:
+          type: integer
+          example: 1
+      responses:
+        '204':
+          description: No Content
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                type: object
+                description: error object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2021-08-30T19:38:26.885"
+                  type:
+                    type: string
+                    example: "Type of exception"
+                  message:
+                    type: string
+                    example: "Details the error message"
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                type: object
+                description: error object
+                properties:
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2021-08-30T19:38:26.885"
+                  type:
+                    type: string
+                    example: "Type of exception"
+                  message:
+                    type: string
+                    example: "Details the error message"

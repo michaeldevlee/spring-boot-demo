@@ -1,0 +1,36 @@
+#####
+# This is the same as the dev configuration file but in YAML format.
+# Spring boot supports both JSON and YAML configuration files.
+#####
+
+# This changes the application server's port from 8080 to 8090
+server.port: 8090
+
+# Message property
+message: hello prod
+
+# These are the MySQL database configurations.
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/testdb
+    driverClassName: com.mysql.jdbc.Driver
+    username: root
+    password: password
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    generate-ddl: true
+    hibernate.ddl-auto: update
+    defer-datasource-initialization: true
+
+# These are the Keycloak configuration properties to tell the application where 
+# to send client requests for authentication. This requires a running Keycloak 
+# server. Otherwise, requests will get a status 500.
+keycloak:
+  auth-server-url: http://localhost:8080/auth
+  realm: demo
+  resource: spring-boot-demo
+  public-client: true
+  security-constraints[0]:
+    authRoles[0]: user
+    securityCollections[0]:
+      patterns: /*, /employees/*

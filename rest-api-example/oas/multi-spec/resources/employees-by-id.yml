@@ -1,0 +1,47 @@
+parameters:
+- $ref: '../components/parameters/parameters.yml#/employeeId'
+get:
+  tags:
+    - employee
+  summary: Gets a specific employee
+  description: 
+    This operation gets a specific employee record given `employeeId`.
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '../components//schemas/employee.yml#/employee'
+    '404':
+      $ref: '../components//responses/responses.yml#/404'
+    '500':
+      $ref: '../components//responses/responses.yml#/500'
+patch:
+  tags:
+    - employee
+  summary: Updates a specific employee
+  description: 
+    This operation updates a specific employee record given `employeeId`.
+  requestBody:
+    $ref: '../components//requests/employee.yml#/employee'    
+  responses:
+    '204':
+      $ref: '../components//responses/responses.yml#/204'
+    '404':
+      $ref: '../components//responses/responses.yml#/404'
+    '500':
+      $ref: '../components//responses/responses.yml#/500'
+delete:
+  tags:
+    - employee
+  summary: Deletes a specific employee
+  description: 
+    This operation deletes a specific employee record given an `employeeId`.
+  responses:
+    '204':
+      $ref: '../components//responses/responses.yml#/204'
+    '404':
+      $ref: '../components//responses/responses.yml#/404'
+    '500':
+      $ref: '../components//responses/responses.yml#/500'

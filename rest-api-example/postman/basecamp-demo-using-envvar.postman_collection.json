@@ -1,0 +1,513 @@
+{
+	"info": {
+		"_postman_id": "35a39be0-8874-43c7-a318-30cd1f7f603d",
+		"name": "basecamp-demo-using-envvar",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Message",
+			"item": [
+				{
+					"name": "Message as Text",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/message/text",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"message",
+								"text"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Message as JSON",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/message/json",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"message",
+								"json"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Employee",
+			"item": [
+				{
+					"name": "Create a new Employee",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Assert: The status code should be 201 for successful POST\r",
+									"pm.test(\"Status code should be 201\", function () {\r",
+									"    pm.response.to.have.status(201);\r",
+									"});\r",
+									"\r",
+									"// Assert: Location header should exist and has the correct value\r",
+									"// pm.test(\"The Location header should be present\", () => {\r",
+									"//     pm.response.to.have.header(\"Location\");\r",
+									"//     const location = pm.response.headers.get(\"Location\");\r",
+									"//     // Trainee assignment: Find a script that will capture the newly created employeeId\r",
+									"//     pm.expect(location).eql(\"/employees\")\r",
+									"// });\r",
+									"\r",
+									"// Assert: Response body should be empty\r",
+									"pm.test(\"Response body should be empty\", function () {\r",
+									"    pm.expect(pm.response.text()).to.be.empty;\r",
+									"});\r",
+									"\r",
+									"// Set the employeeID collection variable with the latest employee ID\r",
+									"var employeeId = pm.response.headers.get(\"Location\").split(\"/\").pop();\r",
+									"pm.collectionVariables.set(\"employeeId\", employeeId);\r",
+									"console.log(\"ID = \"+pm.collectionVariables.get(\"employeeId\"));\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employeeName\": \"John Doe\",\r\n    \"position\": \"Developer\",\r\n    \"dateHired\": \"2001-01-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/employees",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get All Employees",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Declare a variable that contains the schema as defined in the OAS that the response body should follow.\r",
+									"const schema = {\r",
+									"  \"type\": \"array\",\r",
+									"  \"items\": [\r",
+									"    {\r",
+									"      \"type\": \"object\",\r",
+									"      \"properties\": {\r",
+									"        \"employeeId\": {\r",
+									"            \"type\": \"integer\"\r",
+									"        },\r",
+									"        \"employeeName\": {\r",
+									"            \"type\": \"string\"\r",
+									"        },\r",
+									"        \"position\": {\r",
+									"            \"type\": \"string\"\r",
+									"        },\r",
+									"        \"dateHired\": {\r",
+									"            \"type\": \"string\"\r",
+									"        }\r",
+									"      },\r",
+									"      \"required\": [\r",
+									"        \"employeeId\",\r",
+									"        \"employeeName\"\r",
+									"      ]\r",
+									"    }\r",
+									"  ]\r",
+									"}\r",
+									"\r",
+									"// Convert the response body to JSON\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"// Assert: Status code should be 200\r",
+									"pm.test(\"Status code should be 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Assert: The response body should follow the expected schema \r",
+									"pm.test('The response should match the schema', function () {\r",
+									"    const isSchemaValid = tv4.validateResult(response, schema).valid;\r",
+									"    pm.expect(isSchemaValid).to.be.true;\r",
+									"});\r",
+									"\r",
+									"// Assert: The response body should match the expected field properties\r",
+									"pm.test(\"The response should have all expected properties\", () => {\r",
+									"  pm.expect(response).to.be.an(\"array\");\r",
+									"  pm.expect(response[0]).to.be.an(\"object\");\r",
+									"  pm.expect(response[0].employeeId).to.be.a(\"number\");\r",
+									"  pm.expect(response[0].employeeName).to.be.a(\"string\");\r",
+									"  pm.expect(response[0].position).to.be.a(\"string\");\r",
+									"  pm.expect(response[0].dateHired).to.be.a(\"string\");\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/employees",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"employees"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Employee By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Declare a variable that contains the schema as defined in the OAS that the response body should follow.\r",
+									"const schema = {\r",
+									"    \"type\": \"object\",\r",
+									"    \"properties\": {\r",
+									"        \"employeeId\": {\r",
+									"            \"type\": \"integer\"\r",
+									"        },\r",
+									"        \"employeeName\": {\r",
+									"            \"type\": \"string\"\r",
+									"        },\r",
+									"        \"position\": {\r",
+									"            \"type\": \"string\"\r",
+									"        },\r",
+									"        \"dateHired\": {\r",
+									"            \"type\": \"string\"\r",
+									"        }\r",
+									"    },\r",
+									"    \"required\": [\r",
+									"        \"employeeId\",\r",
+									"        \"employeeName\"\r",
+									"    ]\r",
+									"}\r",
+									"\r",
+									"// Convert the response body to JSON\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"// Assert: Status code should be 200\r",
+									"pm.test(\"Status code should be 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"// Assert: Content-Type should be application/json\r",
+									"pm.test(\"Content-Type header should be application/json\", () => {\r",
+									"  pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');\r",
+									"});\r",
+									"\r",
+									"// Assert: The response body should follow the expected schema \r",
+									"pm.test('Schema should be valid', function () {\r",
+									"    const isSchemaValid = tv4.validateResult(response, schema).valid;\r",
+									"    pm.expect(isSchemaValid).to.be.true;\r",
+									"});\r",
+									"\r",
+									"// Assert: The response should not exceed 300ms\r",
+									"pm.test(\"Response time should be less than 300ms\", () => {\r",
+									"  pm.expect(pm.response.responseTime).to.be.below(300);\r",
+									"});\r",
+									"\r",
+									"// Assert: The response body should match the expected field properties\r",
+									"pm.test(\"The response should have all expected properties\", () => {\r",
+									"  pm.expect(response).to.be.an(\"object\");\r",
+									"  pm.expect(response.employeeId).to.be.a(\"number\");\r",
+									"  pm.expect(response.employeeName).to.be.a(\"string\");\r",
+									"  pm.expect(response.position).to.be.a(\"string\");\r",
+									"  pm.expect(response.dateHired).to.be.a(\"string\");\r",
+									"});\r",
+									"\r",
+									"// Optional Assert: The response body should contain the expected employee data\r",
+									"pm.test(\"The response should contain the expected employee data\", () => {\r",
+									"  pm.expect(response.employeeName).to.eql(\"John Doe\");\r",
+									"  pm.expect(response.position).to.eql(\"Developer\");\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/employees/{{employeeId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"employees",
+								"{{employeeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update Employee By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Assert: The status code should be 204 for successful PATCH\r",
+									"pm.test(\"Status code should be 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									"\r",
+									"// Assert: Response body should be empty\r",
+									"pm.test(\"Response body should be empty\", function () {\r",
+									"    pm.expect(pm.response.text()).to.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"employeeName\": \"John Doe, Jr\",\r\n    \"position\": \"Manager\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/employees/{{employeeId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"employees",
+								"{{employeeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Employee By Id",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Assert: The status code should be 204 for successful DELETE\r",
+									"pm.test(\"Status code should be 204\", function () {\r",
+									"    pm.response.to.have.status(204);\r",
+									"});\r",
+									"\r",
+									"// Assert: Response body should be empty\r",
+									"pm.test(\"Response body should be empty\", function () {\r",
+									"    pm.expect(pm.response.text()).to.be.empty;\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/employees/{{employeeId}}",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"employees",
+								"{{employeeId}}"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get by Id - Not Found",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"// Convert the response body to JSON\r",
+									"const response = pm.response.json();\r",
+									"\r",
+									"// TODO Trainees can add the schema check here\r",
+									"\r",
+									"// Assert: Status code should be 404\r",
+									"pm.test(\"Status code should be 404\", function () {\r",
+									"    pm.response.to.have.status(404);\r",
+									"});\r",
+									"\r",
+									"// Assert: Content-Type should be application/json\r",
+									"pm.test(\"Content-Type header should be application/json\", () => {\r",
+									"    pm.expect(pm.response.headers.get('Content-Type')).to.eql('application/json');\r",
+									"});\r",
+									"\r",
+									"// Assert: The response body should match the expected field properties\r",
+									"pm.test(\"The response should have all expected properties\", () => {\r",
+									"   pm.expect(response).to.be.an(\"object\");\r",
+									"    pm.expect(response.timestamp).to.be.a(\"string\");\r",
+									"    pm.expect(response.type).to.be.a(\"string\");\r",
+									"    pm.expect(response.message).to.be.a(\"string\");\r",
+									"});\r",
+									"\r",
+									"// Assert: The response body should contain the expected employee data\r",
+									"pm.test(\"The response should contain the expected employee data\", () => {\r",
+									"    pm.expect(response.type).to.eql(\"NotFoundException\");\r",
+									"    // TODO: Trainee to check the message  \r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/employees/999",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"employees",
+								"999"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Method Not Allowed",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/employees/1",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"employees",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Bad Request",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"position\": \"Developer\",\r\n    \"dateHired\": \"2001-01-01\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{protocol}}://{{host}}:{{port}}/employees",
+							"protocol": "{{protocol}}",
+							"host": [
+								"{{host}}"
+							],
+							"port": "{{port}}",
+							"path": [
+								"employees"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"",
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "employeeId",
+			"value": "0"
+		}
+	]
+}

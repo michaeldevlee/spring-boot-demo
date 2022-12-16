@@ -1,0 +1,172 @@
+pipeline {
+    agent {
+        kubernetes {
+            yamlFile ('ci/agents/pods-ms3.yaml')
+        }
+    }
+
+    stages {
+        stage('SCM Checkout') {
+            steps {
+                // Get code from Bitbucket repository
+                git branch: 'develop', 
+                	url: 'https://andie-azucena@bitbucket.org/andie-azucena/spring-boot-demo.git'
+            } // steps
+        } // stage
+        stage('Unit Test') {
+            steps {
+            	container('maven') {
+                    dir('rest-api-example') {
+                        script {
+                            sh '''
+                                mvn clean test
+                            '''	                
+                        } // script            	
+                    } // dir
+            	} // container
+            } // steps
+            post {
+                success {
+                    dir('rest-api-example') {
+                        junit 'target/surefire-reports/*.xml'
+                        script {
+                            publishHTML (target: [
+                                allowMissing: true,
+                                alwaysLinkToLastBuild: false,
+                                keepAll: true,
+                                reportDir: 'target/site/jacoco', 
+                                reportFiles: 'index.html',
+                                reportName: "Jacoco report"
+                            ])
+                        }
+                    } // dir
+                } // success
+            } // post       	
+        } // stage
+        stage('Start Keycloak Docker') {
+			steps {
+				container('docker') {
+                    dir('rest-api-example') {
+                        script {
+                            sh '''
+                                echo Running Docker build to create Keycloak in Docker
+                                cd keycloak
+                                docker build -t keycloak:latest .
+                                docker run -d --name keycloak -p 8080:8080 keycloak:latest
+                                sleep 5
+                            
+                            '''
+                        } // script
+                    } // dir
+            	} // container
+        	} // steps
+        } // stage
+        stage('Start API') {
+            steps {
+                container('maven') {
+                    dir('rest-api-example') {
+                        script {
+                            sh '''
+                                echo Inside START API
+                                mvn spring-boot:run -Dspring-boot.run.arguments="--spring.config.name=spring-boot-demo --spring.profiles.active=dev" &
+                                sleep 5
+                            '''
+                        } //script
+                    } // dir
+                } //container
+            } //steps
+        } //stage
+        stage('Postman CI test') {
+            steps {
+                container('postman') {
+                    dir('rest-api-example') {
+                        script {
+                            sh '''
+                                npm install -g newman-reporter-html
+                                sleep 5
+                                newman run postman/basecamp-demo-using-envvar.postman_collection.json -e postman/basecamp-demo-local.postman_environment.json -r cli,html --reporter-html-export target/site/newman/tests-report.html
+                            '''
+                        } //script
+                    } // dir
+                } //container
+            } //steps
+            post {
+                success {
+                    dir('rest-api-example') {
+                        script {
+                            publishHTML (target: [
+                                allowMissing: true,
+                                alwaysLinkToLastBuild: false,
+                                keepAll: true,
+                                reportDir: 'target/site/newman',
+                                reportFiles: 'tests-report.html',
+                                reportName: "Integration Tests Report"
+                            ])
+                        } //script
+                    } //dir
+                } //success
+            } //post            
+        } //stage
+        stage('JMeter test') {
+            steps {
+                container('jmeter') {
+                    dir('rest-api-example') {
+                        script {
+                            sh '''
+                                jmeter -n -t jmeter/basecamp-demo-test-plan.jmx -l load-test.jtl -e -o test-report
+                            '''
+                        } //script
+                    } // dir
+                } //container
+            } //steps
+            post {
+                success {
+                    dir('rest-api-example') {
+                        script {
+                            publishHTML (target: [
+                                allowMissing: true,
+                                alwaysLinkToLastBuild: false,
+                                keepAll: true,
+                                reportDir: 'test-report',
+                                reportFiles: 'index.html',
+                                reportName: "Jmeter report"
+                            ])
+                        } //script
+                    } //dir
+                } //success
+            } //post            
+        } //stage
+        stage('Package the API') {
+            steps {
+            	container('maven') {
+                    dir('rest-api-example') {
+                        script {
+                            sh label: '', script: 'mvn package -DskipTests=true'
+                        } // script
+                    } //dir
+            	} // container
+        	} // steps
+        } //stage     
+        stage('Build and Upload Docker Image') {
+            steps {
+                container('docker') {
+                    dir('rest-api-example') {
+                        script {
+                            withCredentials([usernamePassword(
+                                credentialsId: 'docker-reg',
+                                usernameVariable: 'USERNAME',
+                                passwordVariable: 'PASSWORD',
+                            )]) {
+                                sh """
+                                    docker login ${PUBLIC_DOCKER_REGISTRY} --username=${USERNAME} --password=${PASSWORD}
+                                    docker build . -t ${PUBLIC_DOCKER_REGISTRY}/andie-sample-app:latest -t docker-public.kube.cloudapps.ms3-inc.com/andie-sample-app:1.0.0
+                                    docker push ${PUBLIC_DOCKER_REGISTRY}/andie-sample-app --all-tags
+                                """
+                            }
+                        } // script
+                    } // dir
+            	} // container
+        	} // steps 
+        } //stage
+    }
+}

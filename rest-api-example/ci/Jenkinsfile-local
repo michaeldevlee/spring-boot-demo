@@ -1,0 +1,148 @@
+pipeline {
+    agent any
+
+    tools {
+        maven "MAVEN_HOME"
+    }
+
+    stages {
+        // stage('SCM Checkout') {
+        //     steps {
+        //         // Get code from Bitbucket repository
+        //         git branch: 'develop', 
+        //         	url: 'git@bitbucket.org:mountainstatesoftware/spring-boot-training.git'
+        //     } // steps
+        // } // stage              
+        stage('Unit Test') {
+            steps {
+                dir('rest-api-example') {
+                    script {
+                        sh 'mvn clean test'
+                    } //script
+                } // dir
+            } //steps
+            post {
+                success {
+                    dir('rest-api-example') {
+                        junit 'target/surefire-reports/*.xml'
+                        script {
+                            publishHTML (target: [
+                                allowMissing: true,
+                                alwaysLinkToLastBuild: false,
+                                keepAll: true,
+                                reportDir: 'target/site/jacoco', 
+                                reportFiles: 'index.html',
+                                reportName: "Jacoco report"
+                            ])
+                        } // script
+                    } // dir
+                } //success
+            } //post             
+        } // stage
+        stage('Start API') {
+            steps {
+                dir('rest-api-example') {
+                    script {
+                        sh '''
+                            echo Inside START API
+                            mvn spring-boot:run -Dspring-boot.run.arguments="--spring.config.name=spring-boot-demo --spring.profiles.active=local" &
+                            sleep 5
+                        '''
+                    } //script
+                } // dir
+            } //steps
+        } //stage
+        stage('Integration Test') {
+            steps {
+                dir('rest-api-example') {
+                    script {
+                        sh '''
+                            npm install -g newman
+                            sleep 5
+                            npm install -g newman-reporter-html
+                            sleep 5
+                            newman run postman/basecamp-demo-using-envvar.postman_collection.json -e postman/basecamp-demo-local.postman_environment.json -r cli,html --reporter-html-export target/site/newman/tests-report.html
+                        '''
+                    } //script
+                } // dir
+            } //steps
+            post {
+                success {
+                    dir('rest-api-example') {
+                        script {
+                            publishHTML (target: [
+                                allowMissing: true,
+                                alwaysLinkToLastBuild: false,
+                                keepAll: true,
+                                reportDir: 'target/site/newman',
+                                reportFiles: 'tests-report.html',
+                                reportName: "Integration Tests Report"
+                            ])
+                        } // script
+                    } // dir
+                } //success
+            } //post            
+        } //stage
+        stage('Load Test') {
+            steps {
+                dir('rest-api-example') {
+                    script {
+                        sh '''
+                            mkdir -p target/site/jmeter/report
+                            /d/apache-jmeter-5.4.1/bin/jmeter -n -t jmeter/basecamp-demo.jmx -l target/site/jmeter/load-test.jtl -e -o target/site/jmeter/report
+                        '''
+                    } //script
+                } // dir
+            } //steps
+            post {
+                success {
+                    dir('rest-api-example') {
+                        script {
+                            publishHTML (target: [
+                                allowMissing: true,
+                                alwaysLinkToLastBuild: false,
+                                keepAll: true,
+                                reportDir: 'target/site/jmeter/report',
+                                reportFiles: 'index.html',
+                                reportName: "Jmeter report"
+                            ])
+                        } // script
+                    } // dir
+                } //success
+            } //post            
+        } //stage
+        stage('Package the API') {
+            steps {
+                dir('rest-api-example') {
+                    script {
+                        sh 'mvn package -DskipTests=true'
+                    } // script
+                } // dir
+        	} // steps
+        } // stage
+        stage('Build and Upload Docker Image') {
+            options {
+                // Login to MS3 Nexus sometimes fail even with correct creds
+                // and takes a couple of tries to succeed.
+                retry(5)
+            }            
+            steps {
+                dir('rest-api-example') {
+                    script {
+                        withCredentials([usernamePassword(
+                            credentialsId: 'ms3-nexus',
+                            usernameVariable: 'USERNAME',
+                            passwordVariable: 'PASSWORD',
+                        )]) {
+                            sh """
+                            docker login docker-public.kube.cloudapps.ms3-inc.com --username=${USERNAME} --password=${PASSWORD}
+                            docker build . -t docker-public.kube.cloudapps.ms3-inc.com/spring-boot-demo:latest
+                            docker push docker-public.kube.cloudapps.ms3-inc.com/spring-boot-demo --all-tags
+                            """
+                        }
+                    } //script
+                } // dir
+            } //steps
+        } //stage         
+    } // stages
+} // pipeline

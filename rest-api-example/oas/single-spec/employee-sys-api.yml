@@ -1,0 +1,243 @@
+openapi: '3.0.2'
+info:
+  title: Employee System API
+  description: This is a sample API for demonstration purposes.
+  version: '1.0.0'
+  license:
+    name: Apache License 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.txt
+  contact:
+    name: Andie Azucena
+    email: aazucena@ms3-inc.com
+
+servers:
+  - url: https://virtserver.swaggerhub.com/coolice07/employee-sys-api/1.0.0  
+    description: SwaggerHub API Auto Mocking
+  - url: http://localhost:8090/v1/api/employee-sys
+    description: Local server
+  - url: http://my-dev-server.com/v1/api/employee-sys
+    description: Development
+  - url: '{protocol}://{serverUrl}/{version}/api/employee-sys'
+    variables:
+      protocol:
+        default: http
+        description: This is the protocol
+        enum:
+          - http
+          - https
+      serverUrl:
+        default: localhost:8090
+        description: This is the Server URL
+        enum:
+          - localhost:8090
+          - my-dev-server.com
+          - my-prod-server.com
+      version:
+        default: v1
+        description: This is the API version
+
+tags:
+  - name: employee
+    description: tag for employee resource
+
+paths: 
+  /employees:
+    get:
+      tags:
+        - employee
+      summary: Gets all employees
+      description: 
+        This operation gets all employee records from the `employee` database.
+      parameters:
+        - $ref: '#/components/parameters/page'
+        - $ref: '#/components/parameters/limit'
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/employeeList'
+        '500':
+          $ref: '#/components/responses/500'
+    post:
+      tags:
+        - employee
+      summary: Creates a new employee
+      description: This operation inserts a new employee record to the `employee` database.
+      requestBody:
+        $ref: '#/components/requestBodies/employee'
+      responses:
+        '201':
+          $ref: '#/components/responses/201'
+        '500':
+          $ref: '#/components/responses/500'
+  /employees/{employeeId}:
+    parameters:
+    - $ref: '#/components/parameters/employeeId'
+    get:
+      tags:
+        - employee
+      summary: Gets a specific employee
+      description: 
+        This operation gets a specific employee record given `employeeId`.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/employee'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    patch:
+      tags:
+        - employee
+      summary: Updates a specific employee
+      description: 
+        This operation updates a specific employee record given `employeeId`.
+      requestBody:
+        $ref: '#/components/requestBodies/employee'          
+      responses:
+        '204':
+          $ref: '#/components/responses/204'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+    delete:
+      tags:
+        - employee
+      summary: Deletes a specific employee
+      description: 
+        This operation deletes a specific employee record given an `employeeId`.
+      responses:
+        '204':
+          $ref: '#/components/responses/204'
+        '404':
+          $ref: '#/components/responses/404'
+        '500':
+          $ref: '#/components/responses/500'
+                    
+components:
+  parameters:
+    employeeId:
+      name: employeeId
+      description: employee ID path parameter
+      required: true
+      in: path
+      schema:
+        type: integer
+        example: 1
+    page:
+      name: page
+      in: query
+      description: page number
+      schema:
+        type: integer
+        example: 1
+    limit:        
+      name: limit
+      in: query
+      description: maximum number of employees to return
+      schema:
+        type: integer
+        example: 10    
+
+  requestBodies:
+    employee:
+      description: Request body for POST and PATCH
+      required: true
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              employeeName:
+                type: string
+                example: "John Doe"
+              position:
+                type: string
+                example: "Manager"
+              dateHired:
+                type: string
+                format: date
+                example: "2000-01-01"
+  
+  schemas:
+    employee:
+      type: object
+      description: Employee request body
+      properties:
+        employeeId:
+          type: integer
+          example: 1
+        employeeName:
+          type: string
+          example: "John Doe"
+        position:
+          type: string
+          example: "Manager"
+        dateHired:
+          type: string
+          format: date
+          example: "2000-01-01"
+    
+    employeeList:
+      type: array
+      description: Employee List schema
+      items:
+        $ref: '#/components/schemas/employee'
+      example: 
+        - employeeId: 1
+          employeeName: "John Doe"
+          position: "Manager"
+          dateHired: "2000-01-01"
+        - employeeId: 2
+          employeeName: "Jane Doe"
+          position: "Supervisor"
+          dateHired: "2010-01-01"
+
+    error:
+      type: object
+      description: Error schema
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          example: "2021-08-30T19:38:26.885"
+        type:
+          type: string
+          example: "Type of exception"
+        message:
+          type: string
+          example: "Details the error message"
+
+  responses:
+    '201':
+      description: Created
+    '204':
+      description: No Content
+    '404':
+      description: Not Found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'    
+    '500':
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/error'
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

@@ -1,0 +1,14 @@
+employeeList:
+  type: array
+  description: Employee List schema
+  items:
+    $ref: './employee.yml#/employee'
+  example: 
+    - employeeId: 1
+      employeeName: "John Doe"
+      position: "Manager"
+      dateHired: "2000-01-01"
+    - employeeId: 2
+      employeeName: "Jane Doe"
+      position: "Supervisor"
+      dateHired: "2010-01-01"

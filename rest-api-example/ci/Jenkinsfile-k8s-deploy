@@ -1,0 +1,40 @@
+pipeline {
+    agent {
+        kubernetes {
+        yaml '''
+            apiVersion: v1
+            kind: Pod
+            spec:
+              containers:
+              - name: k8s-tools
+                image: joshendriks/alpine-k8s
+                tty: true 
+                command: ['cat']
+            '''
+        }
+    }
+    stages {
+        stage('SCM Checkout') {
+            steps {
+                // Get code from Bitbucket repository
+                git branch: 'develop',
+                    credentialsId: 'bitbucket-creds',
+                	url: 'https://bitbucket.org/mountainstatesoftware/spring-boot-training.git'
+            } // steps
+        } // stage
+        stage('Deploy the API') {
+            steps {
+                container('k8s-tools') {
+                    withKubeConfig([credentialsId: 'docker-desktop', serverUrl: 'https://kubernetes.docker.internal:6443']) {
+                        dir('rest-api-example/kubernetes') {
+                            sh '''
+                                kubectl cluster-info
+                                kubectl apply -f ./app-deployment.yaml
+                            '''
+                        } // dir
+                    } // kubeconfig
+                } // container
+            } // steps
+        } // stage
+    } // stages
+}

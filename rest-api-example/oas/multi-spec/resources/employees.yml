@@ -1,0 +1,30 @@
+get:
+  tags:
+    - employee
+  summary: Gets all employees
+  description: 
+    This operation gets all employee records from the `employee` database.
+  parameters:
+    - $ref: '../components//parameters/parameters.yml#/page'
+    - $ref: '../components//parameters/parameters.yml#/limit'
+  responses:
+    '200':
+      description: OK
+      content:
+        application/json:
+          schema:
+            $ref: '../components//schemas/employee-list.yml#/employeeList'
+    '500':
+      $ref: '../components//responses/responses.yml#/500'
+post:
+  tags:
+    - employee
+  summary: Creates a new employee
+  description: This operation inserts a new employee record to the `employee` database.
+  requestBody:
+    $ref: '../components//requests/employee.yml#/employee' 
+  responses:
+    '201':
+      $ref: '../components//responses/responses.yml#/201'
+    '500':
+      $ref: '../components//responses/responses.yml#/500'

@@ -1,0 +1,19 @@
+employee:
+  description: Request body for POST and PATCH
+  required: true
+  content:
+    application/json:
+      schema:
+        type: object
+        properties:
+          employeeName:
+            type: string
+          position:
+            type: string
+          dateHired:
+            type: string
+            format: date
+        example:
+          employeeName: "John Doe"
+          position: "Manager"
+          dateHired: "2000-01-01"            

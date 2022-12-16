@@ -1,0 +1,57 @@
+openapi: '3.0.2'
+info:
+  title: Employee System API
+  description: This is a sample API for demonstration purposes.
+  version: '1.0.0'
+  license:
+    name: Apache License 2.0
+    url: https://www.apache.org/licenses/LICENSE-2.0.txt
+  contact:
+    name: Andie Azucena
+    email: aazucena@ms3-inc.com
+
+servers:
+  - url: https://virtserver.swaggerhub.com/coolice07/employee-sys-api/1.0.0  
+    description: SwaggerHub API Auto Mocking
+  - url: http://localhost:8090/v1/api/employee-sys
+    description: Local server
+  - url: http://my-dev-server.com/v1/api/employee-sys
+    description: Development
+  - url: '{protocol}://{serverUrl}/{version}/api/employee-sys'
+    variables:
+      protocol:
+        default: http
+        description: This is the protocol
+        enum:
+          - http
+          - https
+      serverUrl:
+        default: localhost:8090
+        description: This is the Server URL
+        enum:
+          - localhost:8090
+          - my-dev-server.com
+          - my-prod-server.com
+      version:
+        default: v1
+        description: This is the API version
+
+tags:
+  - name: employee
+    description: tag for employee resource
+
+paths: 
+  /employees:
+    $ref: './resources/employees.yml'
+  /employees/{employeeId}:
+    $ref: './resources/employees-by-id.yml'
+                    
+components: 
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - bearerAuth: []

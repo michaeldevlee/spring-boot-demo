@@ -1,0 +1,22 @@
+employeeId:
+  name: employeeId
+  description: employee ID path parameter
+  required: true
+  in: path
+  schema:
+    type: integer
+    example: 1
+page:
+  name: page
+  in: query
+  description: page number
+  schema:
+    type: integer
+    example: 1
+limit:        
+  name: limit
+  in: query
+  description: maximum number of employees to return
+  schema:
+    type: integer
+    example: 10  

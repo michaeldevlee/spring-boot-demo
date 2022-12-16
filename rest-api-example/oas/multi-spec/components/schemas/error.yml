@@ -1,0 +1,15 @@
+error:
+  type: object
+  description: Error schema
+  properties:
+    timestamp:
+      type: string
+      format: date-time
+    type:
+      type: string
+    message:
+      type: string
+  example:
+      timestamp: "2021-08-30T19:38:26.885"
+      type: "Type of exception"
+      message: "Details the error message"
