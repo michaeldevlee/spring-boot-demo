@@ -1,33 +1,37 @@
-# Spring Boot Demo
+# REST API Example
 
 ## Overview
 
-This is the repository for all the technologies covered for Basic Bootcamp training. Check out the following training documents on how to build the project step by step.
+This repository contains the project code for a simple RESTful API. The objective is to design a system API that will handle employee data. The API provides CRUD functionality for an `Employee` resource.
 
-* [OpenAPI Specification (OAS) and Swagger Tools Guide](https://bookstack.ms3-inc.com/books/ms3-basecamp/page/openapi-specification-%28oas%29-and-swagger-tools-guide)
-* [Create a REST API using Spring Boot](https://bookstack.ms3-inc.com/books/ms3-basecamp/page/create-a-rest-api-using-spring-boot)
-* [Add Unit Test on Spring Boot REST API](https://bookstack.ms3-inc.com/books/ms3-basecamp/page/add-unit-test-on-spring-boot-rest-api)
+We have an employee table that has the following fields:
 
-### OpenAPI Specification (OAS)
+```
+Employee ID: integer
+Employee name: string
+Position: string
+Date Hired: date
+```
 
-The hands-on training starts with designing the API using OAS and Swagger editor tools. We will learn how to create the API specification which will serve as the API contract and design document. The completed OAS is located [here](https://bitbucket.org/mountainstatesoftware/spring-boot-training/src/develop/oas/).
+The requirements are:
 
-### Spring Boot
-
-The Spring Boot demo application is a working RESTful API that follows the OAS. This application demonstrates the following:
-
-* How to make a REST API using Spring Boot
-* Spring components and annotations
-* Use of Spring profiles
-* Controller and Service layer unit testing
-* Authentication using Keycloak
-
-The complete code is located [here](https://bitbucket.org/mountainstatesoftware/spring-boot-training/src/develop/src/).
+* Provide CRUD (create, read, update, delete) operations
+* Insert a new employee record
+* Get all employee records
+* Get an employee record given a specific employee ID
+* Update an employee record given a specific employee ID
+* Delete an employee record given a specific employee ID
+* Apply response status codes for applicable operations
+  * 200 for successful GET. For GET All operations, an empty result is still a success
+  * 201 for successful POST
+  * 204 for successful DELETE, PATCH, or PUT
+  * 404 when resource is not found. Use this on GET by ID, PATCH/PUT and DELETE
+  * 500 for server errors
 
 ## Technologies Used
 
 * OpenAPI Specification (OAS)
-* Java 8+
+* Java 11
 * Apache Maven
 * JUnit
 * Postman
@@ -35,10 +39,25 @@ The complete code is located [here](https://bitbucket.org/mountainstatesoftware/
 * Keycloak
 * Docker
 * Jenkins
+* Kubernetes
 
-## How to Run the Spring Boot Project Locally
+## OpenAPI Specification (OAS)
 
-### Using Eclipse,
+The hands-on training starts with designing the API using OAS and Swagger editor tools. We will learn how to create the API specification which will serve as the API contract and design document. The completed OAS is located [here](https://github.com/andie-azucena/spring-boot-demo/tree/main/rest-api-example/oas).
+
+## Spring Boot
+
+The Spring Boot application makes use of the OAS to create the RESTful API. This application demonstrates the following:
+
+* How to make a REST API using Spring Boot
+* Spring components and annotations
+* Use of Spring profiles
+* Controller and Service layer unit testing
+* Authentication using Keycloak
+
+### How to Run the Spring Boot Project Locally
+
+#### Using Eclipse,
 
 * Open Git Perspective and clone this repository.
 * Right-click on the cloned repository and import as a Maven project.
@@ -56,7 +75,7 @@ The complete code is located [here](https://bitbucket.org/mountainstatesoftware/
 
 * Click Apply and Run.
 
-### Using CLI,
+#### Using CLI,
 
 * Git clone this repository.
 * Go to project directory.
@@ -66,7 +85,7 @@ The complete code is located [here](https://bitbucket.org/mountainstatesoftware/
 mvn spring-boot:run -Dspring-boot.run.arguments="--spring.config.name=spring-boot-demo --spring.profiles.active=local"
 ```
 
-### Using a Profile other than `local`
+#### Using a Profile other than `local`
 
 If you run the API using the `dev` or `prod` profile, it will require a Keycloak Authorization Server (AS). A Keycloak AS should be running prior to running the API. For information on how to run and set up Keycloak, check the **Authentication using Keycloak** section below.
 
@@ -263,23 +282,14 @@ docker run --rm  \
    -Dkeycloak.profile.feature.upload_scripts=enabled
 ```
 
-## CI/CD using Jenkins
-
-Two Jenkins files are included in this demo and can be found inside the `ci` folder.
-
-* `Jenkinsfile-local` requies a local Jenkins setup. Use this to test different stages of a build pipeline locally.
-* `Jenkinsfile-ms3` can be used in the MS3 Dev Jenkins instance (https://dev-jenkins.sso.kube.cloudapps.ms3-inc.com/). It contains a complete pipeline from unit testing to publishing in MS3 Docker Registry.
-
-To use MS3 Jenkins, follow the documentation in this [Bookstack page](https://bookstack.ms3-inc.com/books/ms3-basecamp/page/pipeline-example).
-
 ## Docker
 
-This demo project can also run inside a Docker container. Several files are included for demonstration:
+This API project can also run inside a Docker container. Several files are included for demonstration:
 
 * `Dockerfile` contains the script to build the API's image.
 * `keycloak/Dockerfile` contains the the script to build a Keycloak container using `jboss/keycloak` image and configuring it with the provided `demo.json` realm file.
 * `docker-compose-local-build.yml` contains the manifest to build the API and Keycloak containers using their corresponding `Dockerfile`.
-* `docker-compose-demo.yml` contains the manifest to pull the API image from MS3 Docker Registry and build the Keycloak container using Dockerfile.
+* `docker-compose-demo.yml` contains the manifest to pull the API image from a Docker Registry and build the Keycloak container using Dockerfile.
 
 To operate Docker Compose,
 
@@ -297,6 +307,18 @@ docker-compose -f .\docker-compose-demo.yml stop
 docker-compose -f .\docker-compose-demo.yml rm
 ```
 
+## CI/CD using Jenkins
+
+Jenkins files are included in this demo and can be found inside the `ci` folder.
+
+The `Jenkinsfile-local` requires a local Jenkins setup. Use this to test different stages of a build pipeline locally.
+
+## Kubernetes
+
+This project also a [deployment manifest](https://github.com/andie-azucena/spring-boot-demo/blob/main/rest-api-example/kubernetes/app-deployment.yaml) to deploy the API in Kubernetes. 
+
+Make sure that the API image has been built first and pushed to your local or public Docker registry. Update the manifest to use the Docker image.
+
 ## References
 
 * https://www.postman.com/
@@ -304,4 +326,3 @@ docker-compose -f .\docker-compose-demo.yml rm
 * https://jmeter.apache.org/
 * https://www.keycloak.org/2017/05/easily-secure-your-spring-boot.html
 * https://developers.redhat.com/blog/2020/01/29/api-login-and-jwt-token-generation-using-keycloak/
-* https://bookstack.ms3-inc.com/books/ms3-basecamp/page/pipeline-example
