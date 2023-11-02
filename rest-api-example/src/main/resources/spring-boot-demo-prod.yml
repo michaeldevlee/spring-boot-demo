@@ -12,10 +12,10 @@ message: hello prod
 # These are the MySQL database configurations.
 spring:
   datasource:
-    url: jdbc:mysql://127.0.0.1:3306/testdb
+    url: jdbc:mysql://ec2-54-81-166-178.compute-1.amazonaws.com/testdb
     driverClassName: com.mysql.jdbc.Driver
     username: root
-    password: password
+    password: passwordpassworD!1
   jpa:
     database-platform: org.hibernate.dialect.MySQL8Dialect
     generate-ddl: true
